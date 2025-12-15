@@ -13,6 +13,10 @@ type Server interface {
 	Start() error
 	Readiness(ctx echo.Context) error
 	Liveness(ctx echo.Context) error
+	GetAllCustomers(ctx echo.Context) error
+	GetAllProducts(ctx echo.Context) error
+	GetAllServices(ctx echo.Context) error
+	GetAllVendors(ctx echo.Context) error
 }
 
 type EchoServer struct {
@@ -41,6 +45,18 @@ func (s *EchoServer) Start() error {
 func (s *EchoServer) registerRoutes() {
 	s.echo.GET("/readiness", s.Readiness)
 	s.echo.GET("/liveness", s.Liveness)
+
+	customerGroup := s.echo.Group("/customers")
+	customerGroup.GET("", s.GetAllCustomers)
+
+	productGroup := s.echo.Group("/products")
+	productGroup.GET("", s.GetAllProducts)
+
+	serviceGroup := s.echo.Group("/services")
+	serviceGroup.GET("", s.GetAllServices)
+
+	vendorGroup := s.echo.Group("/vendors")
+	vendorGroup.GET("", s.GetAllVendors)
 }
 
 func (s* EchoServer) Readiness(ctx echo.Context) error {
