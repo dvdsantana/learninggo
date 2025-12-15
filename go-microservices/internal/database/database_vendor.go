@@ -8,6 +8,7 @@ import (
 	"github.com/dvdsantana/learninggo/go-microservices/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func (c Client) GetAllVendors(ctx context.Context) ([]models.Vendor, error) {
@@ -45,4 +46,30 @@ func (c Client) GetVendorById(ctx context.Context, ID string) (*models.Vendor, e
 		return nil, result.Error
 	}
 	return vendor, nil
+}
+
+func (c Client) UpdateVendor(ctx context.Context, vendor *models.Vendor) (*models.Vendor, error) {
+	theVendor := &models.Vendor{}
+	result := c.DB.WithContext(ctx).
+		Model(theVendor).
+		Clauses(clause.Returning{}).
+		Where(&models.Vendor{VendorID: vendor.VendorID}).
+		Updates(models.Vendor{
+			Name:    vendor.Name,
+			Address: vendor.Address,
+			Phone:   vendor.Phone,
+			Email:   vendor.Email,
+			Contact: vendor.Contact,
+		})
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return nil, &dberrors.ConflictError{}
+		}
+		return nil, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return nil, &dberrors.NotFoundError{Entity: "vendor", ID: vendor.VendorID}
+	}
+	return theVendor, nil
 }

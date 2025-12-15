@@ -17,18 +17,22 @@ type Server interface {
 	GetAllCustomers(ctx echo.Context) error
 	AddCustomer(ctx echo.Context) error
 	GetCustomerById(ctx echo.Context) error
+	UpdateCustomer(ctx echo.Context) error
 
 	GetAllProducts(ctx echo.Context) error
 	AddProduct(ctx echo.Context) error
 	GetProductById(ctx echo.Context) error
+	UpdateProduct(ctx echo.Context) error
 
 	GetAllServices(ctx echo.Context) error
 	AddService(ctx echo.Context) error
 	GetServiceById(ctx echo.Context) error
+	UpdateService(ctx echo.Context) error
 
 	GetAllVendors(ctx echo.Context) error
 	AddVendor(ctx echo.Context) error
 	GetVendorById(ctx echo.Context) error
+	UpdateVendor(ctx echo.Context) error
 }
 
 type EchoServer struct {
@@ -62,18 +66,26 @@ func (s *EchoServer) registerRoutes() {
 	customerGroup.GET("", s.GetAllCustomers)
 	customerGroup.POST("", s.AddCustomer)
 	customerGroup.GET("/:id", s.GetCustomerById)
+	customerGroup.PUT("/:id", s.UpdateCustomer)
 
 	productGroup := s.echo.Group("/products")
 	productGroup.GET("", s.GetAllProducts)
 	productGroup.POST("", s.AddProduct)
+	productGroup.GET("/:id", s.GetProductById)
+	productGroup.PUT("/:id", s.UpdateProduct)
 
 	serviceGroup := s.echo.Group("/services")
 	serviceGroup.GET("", s.GetAllServices)
 	serviceGroup.POST("", s.AddService)
+	serviceGroup.GET("/:id", s.GetServiceById)
+	serviceGroup.PUT("/:id", s.UpdateService)
 
 	vendorGroup := s.echo.Group("/vendors")
 	vendorGroup.GET("", s.GetAllVendors)
 	vendorGroup.POST("", s.AddVendor)
+	vendorGroup.GET("/:id", s.GetVendorById)
+	vendorGroup.PATCH("/:id", s.UpdateVendor)
+
 }
 
 func (s *EchoServer) Readiness(ctx echo.Context) error {
