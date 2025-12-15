@@ -72,3 +72,11 @@ func (c Client) UpdateProduct(ctx context.Context, product *models.Product) (*mo
 	}
 	return theProduct, nil
 }
+
+func (c Client) DeleteProduct(ctx context.Context, ID string) error {
+	product, error := c.GetProductById(ctx, ID)
+	if error != nil {
+		return &dberrors.NotFoundError{Entity: "product", ID: ID}
+	}
+	return c.DB.WithContext(ctx).Delete(product).Error
+}

@@ -69,3 +69,11 @@ func (c Client) UpdateServicePrice(ctx context.Context, service *models.Service)
 	}
 	return theService, nil
 }
+
+func (c Client) DeleteService(ctx context.Context, ID string) error {
+	service, error := c.GetServiceById(ctx, ID)
+	if error != nil {
+		return &dberrors.NotFoundError{Entity: "service", ID: ID}
+	}
+	return c.DB.WithContext(ctx).Delete(service).Error
+}

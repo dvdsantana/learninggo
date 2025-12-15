@@ -77,3 +77,13 @@ func (s *EchoServer) UpdateService(ctx echo.Context) error {
 
 	return ctx.JSON(http.StatusOK, service)
 }
+
+func (s *EchoServer) DeleteService(ctx echo.Context) error {
+	ID := ctx.Param("id")
+
+	if err := s.DB.DeleteService(ctx.Request().Context(), ID); err != nil {
+		return ctx.JSON(http.StatusInternalServerError, err)
+	}
+
+	return ctx.NoContent(http.StatusResetContent)
+}
