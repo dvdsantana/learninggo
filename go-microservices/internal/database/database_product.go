@@ -2,8 +2,12 @@ package database
 
 import (
 	"context"
+	"errors"
 
+	"github.com/dvdsantana/learninggo/go-microservices/internal/dberrors"
 	"github.com/dvdsantana/learninggo/go-microservices/internal/models"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func (c Client) GetAllProducts(ctx context.Context, vendorID string) ([]models.Product, error) {
@@ -13,4 +17,33 @@ func (c Client) GetAllProducts(ctx context.Context, vendorID string) ([]models.P
 		Find(&products)
 
 	return products, result.Error
+}
+
+func (c Client) AddProduct(ctx context.Context, product *models.Product) (*models.Product, error) {
+	product.ProductID = uuid.New().String()
+	result := c.DB.WithContext(ctx).
+		Create(&product)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrDuplicatedKey) {
+			return nil, &dberrors.ConflictError{}
+		}
+		return nil, result.Error
+	}
+	return product, nil
+}
+
+func (c Client) GetProductById(ctx context.Context, ID string) (*models.Product, error) {
+	product := &models.Product{}
+	result := c.DB.WithContext(ctx).
+		Where(&models.Product{ProductID: ID}).
+		First(&product)
+
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, &dberrors.NotFoundError{Entity: "product", ID: ID}
+		}
+		return nil, result.Error
+	}
+	return product, nil
 }

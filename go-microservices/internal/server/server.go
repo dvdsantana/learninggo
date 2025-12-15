@@ -13,21 +13,33 @@ type Server interface {
 	Start() error
 	Readiness(ctx echo.Context) error
 	Liveness(ctx echo.Context) error
+
 	GetAllCustomers(ctx echo.Context) error
+	AddCustomer(ctx echo.Context) error
+	GetCustomerById(ctx echo.Context) error
+
 	GetAllProducts(ctx echo.Context) error
+	AddProduct(ctx echo.Context) error
+	GetProductById(ctx echo.Context) error
+
 	GetAllServices(ctx echo.Context) error
+	AddService(ctx echo.Context) error
+	GetServiceById(ctx echo.Context) error
+
 	GetAllVendors(ctx echo.Context) error
+	AddVendor(ctx echo.Context) error
+	GetVendorById(ctx echo.Context) error
 }
 
 type EchoServer struct {
 	echo *echo.Echo
-	DB database.DatabaseClient
+	DB   database.DatabaseClient
 }
 
 func NewEchoServer(db database.DatabaseClient) Server {
 	server := &EchoServer{
 		echo: echo.New(),
-		DB: db,
+		DB:   db,
 	}
 	server.registerRoutes()
 	return server
@@ -48,24 +60,29 @@ func (s *EchoServer) registerRoutes() {
 
 	customerGroup := s.echo.Group("/customers")
 	customerGroup.GET("", s.GetAllCustomers)
+	customerGroup.POST("", s.AddCustomer)
+	customerGroup.GET("/:id", s.GetCustomerById)
 
 	productGroup := s.echo.Group("/products")
 	productGroup.GET("", s.GetAllProducts)
+	productGroup.POST("", s.AddProduct)
 
 	serviceGroup := s.echo.Group("/services")
 	serviceGroup.GET("", s.GetAllServices)
+	serviceGroup.POST("", s.AddService)
 
 	vendorGroup := s.echo.Group("/vendors")
 	vendorGroup.GET("", s.GetAllVendors)
+	vendorGroup.POST("", s.AddVendor)
 }
 
-func (s* EchoServer) Readiness(ctx echo.Context) error {
+func (s *EchoServer) Readiness(ctx echo.Context) error {
 	if s.DB.Ready() {
 		return ctx.JSON(http.StatusOK, models.Health{Status: "OK"})
 	}
 	return ctx.JSON(http.StatusServiceUnavailable, models.Health{Status: "NOT OK"})
 }
 
-func (s* EchoServer) Liveness(ctx echo.Context) error {
+func (s *EchoServer) Liveness(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, models.Health{Status: "OK"})
 }
